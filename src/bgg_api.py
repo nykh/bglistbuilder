@@ -57,8 +57,13 @@ class BoardGameGeekAPI(object):
         ''' Super smart logic. The base game is probably published before expansions,
             and usually have the shortest name '''
         assert len(items) > 0
-        names_at_least_contain_the_exact_string = filter(lambda r: r.name.startswith(name), items)
-        sort_by_year_asc = sorted(names_at_least_contain_the_exact_string)
+
+        # We can also try to filter down to those that has a prefix of the name but this doesn't always work out
+        names_at_least_contain_the_exact_string = list(filter(lambda r: r.name.startswith(name), items))
+        if names_at_least_contain_the_exact_string:
+            items = names_at_least_contain_the_exact_string
+
+        sort_by_year_asc = sorted(items)
         earliest_year = sort_by_year_asc[0].year
         games_published_in_earliest_year = list(takewhile(
             lambda x: x.year == earliest_year, sort_by_year_asc))
