@@ -6,7 +6,7 @@ class API(object):
         sanitize_root = root.rstrip('/')
         self.root = sanitize_root
 
-    def __getitem__(self, node):
+    def __getattr__(self, node):
         sanitized_node = node.rstrip('/')
         return API(self.root + '/' + sanitized_node)
 
@@ -22,6 +22,13 @@ class API(object):
         return content
 
 class XmlAPI(API):
+    def __getattr__(self, node):
+        sanitized_node = node.rstrip('/')
+        return XmlAPI(self.root + '/' + sanitized_node)
+
+    def __call__(self, *, _method="GET", **kwargs):
+        return super(XmlAPI, self).__call__(_method=_method, **kwargs)
+
     @staticmethod
     def postprocess(content: str):
         parsed = ElementTree.fromstring(content)
