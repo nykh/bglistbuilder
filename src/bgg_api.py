@@ -47,17 +47,18 @@ class BoardGameGeekAPI(object):
             return Non
         if len(results) > 1:
             click.echo(f'Search returned more than one items for {name}. We will pick one.')
-            result = self._pick_base_game(results)
+            result = self._pick_base_game(name, results)
         else:
             result = results[0]
         return Some(GameId(result.id))
 
     @staticmethod
-    def _pick_base_game(items):
+    def _pick_base_game(name, items: List[SearchResult]):
         ''' Super smart logic. The base game is probably published before expansions,
             and usually have the shortest name '''
         assert len(items) > 0
-        sort_by_year_asc = sorted(items)
+        names_at_least_contain_the_exact_string = filter(lambda r: r.name.startswith(name), items)
+        sort_by_year_asc = sorted(names_at_least_contain_the_exact_string)
         earliest_year = sort_by_year_asc[0].year
         games_published_in_earliest_year = list(takewhile(
             lambda x: x.year == earliest_year, sort_by_year_asc))
@@ -66,7 +67,7 @@ class BoardGameGeekAPI(object):
         else:
             return games_published_in_earliest_year[0]
 
-    def _search(self, query: str, exact=False):
+    def _search(self, query: str, exact=False) -> List[SearchResult]:
         exactness = 1 if exact else 0
         items = list(self.api.search(query=query, type='boardgame', exact=exactness))
         results = []
@@ -95,9 +96,9 @@ class BoardGameGeekAPI(object):
         name = a.get_value('name')
         minplayer, maxplayer = a.get_int('minplayers'), a.get_int('maxplayers')
         playingtime = a.get_int('playingtime')
-        url = f'https://www.boardgamegxeek.com/boardgame/{game_id.id}'
+        url = f'https://www.boardgamegeek.com/boardgame/{game_id.id}'
         return Game(name,
-                player_range=(minplayer, maxplayer),
+                player_range=f"{minplayer} to {maxplayer}",
                 playing_time=playingtime,
                 url=url)
 

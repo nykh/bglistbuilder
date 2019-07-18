@@ -16,13 +16,12 @@ def try_to_write_to_output_csv(filepath, contents: List[Game]):
         click.echo('There is nothing to write!')
         return
     try:
-        with open(output, 'w', newline='') as outfile:
+        with open(filepath, 'w', newline='') as outfile:
             cw = csv.writer(outfile)
             cw.writerow(Game._fields)
             cw.writerows(contents)
     except Exception as ex:
-        click.echo(ex)
-        return
+        raise ex
 
 @click.command()
 @click.argument('game_list', type=click.File('r'))
