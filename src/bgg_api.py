@@ -1,6 +1,6 @@
 from typing import List
 from collections import namedtuple
-from itertools import takewhile
+from itertools import takewhile, dropwhile
 from defusedxml import ElementTree
 import time
 from random import random
@@ -64,6 +64,13 @@ class BoardGameGeekAPI(object):
             items = names_at_least_contain_the_exact_string
 
         sort_by_year_asc = sorted(items)
+
+        # Sometimes the name of a game we know happen to collide with some game that came out in the 1960s
+        # I don't think anybody is playing these kinds of games
+        exclude_games_of_last_milenium = list(dropwhile(lambda x: x.year < 2000, sort_by_year_asc))
+        if exclude_games_of_last_milenium:
+            sort_by_year_asc = exclude_games_of_last_milenium
+
         earliest_year = sort_by_year_asc[0].year
         games_published_in_earliest_year = list(takewhile(
             lambda x: x.year == earliest_year, sort_by_year_asc))
