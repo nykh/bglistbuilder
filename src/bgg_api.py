@@ -2,6 +2,8 @@ from typing import List
 from collections import namedtuple
 from itertools import takewhile
 from defusedxml import ElementTree
+import time
+from random import random
 
 import click
 
@@ -101,15 +103,21 @@ class BoardGameGeekAPI(object):
 
 BOARDGAMEGEEK_XML_API_ROOT = 'https://api.geekdo.com/xmlapi2'
 
+def sleep_for_random_second(min=0.2, max=1.5):
+    random_seconds = min + random() * (max - min)  # 1 to 3
+    time.sleep(random_seconds)
+
 def find_descriptions_on_boardgamegeek(names: List[str]) -> List[Game]:
     bgg = BoardGameGeekAPI(BOARDGAMEGEEK_XML_API_ROOT)
     games = []
     for name in names:
         game_id = bgg.search(name)
+        sleep_for_random_second()
         if not game_id:
             click.echo(f'Cannot find the game \"{name}\"')
             continue
         game_info = bgg.describe(game_id.get())
+        sleep_for_random_second()
         if game_info:
             games.append(game_info.get())
         else:
