@@ -132,7 +132,7 @@ class BoardGameGeekAPI(object):
 
 BOARDGAMEGEEK_XML_API_ROOT = 'https://api.geekdo.com/xmlapi2'
 
-def sleep_for_random_second(min=0.2, max=1.5):
+def sleep_for_random_second(min=0.8, max=1.5):
     random_seconds = min + random() * (max - min)  # 1 to 3
     time.sleep(random_seconds)
 
