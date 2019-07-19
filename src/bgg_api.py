@@ -40,20 +40,36 @@ class BoardGameGeekAPI(object):
             print(ex)
             return Non
         if not results:
-            click.echo(f'The exact search is not returning result for {name}, trying fuzzy search')
+            click.echo(f'{name}: Exact search returns 0 item, trying fuzzy search')
             results = self._search(name, exact=False)
+        elif len(results) > 1:
+            click.echo(f'{name}: Exact search returned more than one items. We will pick the latest one.')
+            result = self._pick_most_relevant_game(name, results)
+            return Some(GameId(result.id))
         if not results:
-            click.echo(f'The fuzzy search is not returning result for {name}, skipped')
+            click.echo(f'{name}: Fuzzy search returns 0 item, skipped')
             return Non
         if len(results) > 1:
-            click.echo(f'Search returned more than one items for {name}. We will pick one.')
+            click.echo(f'{name}: Fuzzy search returned more than one items. We will pick one.')
             result = self._pick_base_game(name, results)
         else:
             result = results[0]
         return Some(GameId(result.id))
 
     @staticmethod
-    def _pick_base_game(name, items: List[SearchResult]):
+    def _pick_most_relevant_game(name: str, games: List[SearchResult]) -> SearchResult:
+        ''' When more than one game of the same name exist. Usually the latest one is the most relevant. '''
+        assert len(games) > 0
+        sort_by_year_desc = sorted(games, reverse=True)
+        latest_year = sort_by_year_desc[0].year
+        games_published_in_latest_year = list(takewhile(
+            lambda x: x.year == latest_year, sort_by_year_desc))
+        if len(games_published_in_latest_year) > 1:
+            click.echo(f'For some reason more than one game of the exact same name {name} are published in the same year. Pick an arbitrary one')
+        return games_published_in_latest_year[0]
+
+    @staticmethod
+    def _pick_base_game(name, items: List[SearchResult]) -> SearchResult:
         ''' Super smart logic. The base game is probably published before expansions,
             and usually have the shortest name '''
         assert len(items) > 0
